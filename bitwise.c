@@ -41,7 +41,7 @@ typedef struct {
     int32_t prediction;
     int16_t count;
 } Model;
-Model m[256][256][256]; // Context order 2 and bit context
+Model m[256][256]; // Context order 2 and bit context
  
 static int compress(const uint8_t *in, size_t len, FILE *out);
 static int encode(uint8_t bit, uint32_t pred, uint32_t *low, uint32_t *high,
@@ -136,10 +136,8 @@ static void
 init_models(void) {
     for (int i = 0; i < 256; i++) {
         for (int j = 0; j < 256; j++) {
-            for (int k = 0; k < 256; k++) {
-                m[i][j][k].prediction = 65536/2 - 1;
-                m[i][j][k].count      = 0;
-            }
+            m[i][j].prediction = 65536/2 - 1;
+            m[i][j].count      = 0;
         }
     }
 }
@@ -165,7 +163,7 @@ compress(const uint8_t *in, size_t len, FILE *out) {
             int ctx = (x + 256) >> (j + 1); // bit context
             int bit = (x >> j) % 2;
 
-            Model *mp = &m[b][a][ctx];
+            Model *mp = &m[a][ctx];
             w         += encode(bit, mp->prediction, &low, &high, out);
 
             update_model(bit, mp);
@@ -253,7 +251,7 @@ decompress(const uint8_t *in, size_t len, FILE *out) {
         {
             int bit;
 
-            Model *mp = &m[b][a][ctx];
+            Model *mp = &m[a][ctx];
             if ((bit = decode(mp->prediction, &low, & high, &curr)) == -1)
                 error_exit("archive corrupted at %d of %ld\nhi %u\nlo %u\n",
                         tin, len, high, low);
