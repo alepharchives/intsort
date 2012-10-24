@@ -9,7 +9,7 @@ int main() {
 
     srand(time(NULL));
     for (i = 0; i < 1000000; i++) {
-        v = rand() % 99999999; // int in the 0:99999999 range
+        v = rand() % 99999999;
         fwrite( &v, sizeof (v), 1, stdout);
     }
 
